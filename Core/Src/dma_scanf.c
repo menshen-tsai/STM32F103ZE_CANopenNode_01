@@ -18,7 +18,8 @@ int dma_scanf_getc_blocking(){
     while(dma_ring_available(&dsi.rx_ring) == 0){
         dma_ring_set_w_ptr(&dsi.rx_ring, (uint16_t)((dsi.rx_ring.buf_size - dsi.huart->hdmarx->Instance->CNDTR)&0xFFFF));
     }
-    char c;
+    ////char c;
+    uint8_t c;
     dma_ring_getc(&dsi.rx_ring, &c);
     return c;
 }

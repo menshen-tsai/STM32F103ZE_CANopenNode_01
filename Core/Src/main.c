@@ -24,6 +24,9 @@
 #include "dma_printf.h"
 #include "dma_scanf.h"
 #include "log.h"
+
+#include "CO_app_STM32.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +45,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan;
+
 RTC_HandleTypeDef hrtc;
 
 TIM_HandleTypeDef htim2;
@@ -50,6 +55,7 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
+uint8_t flag;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -61,6 +67,7 @@ static void MX_DMA_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_CAN_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -94,31 +101,20 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-  static uint32_t c;
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM2) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-  if (htim->Instance == TIM2) {
-	  if (c++ > 500)
-	  {
-		c = 0;
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	  }
-  }
-  /* USER CODE END Callback 1 */
-}
+
 
 void loop()
 {
 	static uint32_t count;
-	log_info("Count = %lu\r", count++);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
-	HAL_Delay(100);
+	if (flag == 1)
+	{
+		flag = 0;
+		log_info("Count = %lu\r", count++);
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+	}
+//	HAL_Delay(100);
+
+	canopen_app_process();
 }
 /* USER CODE END 0 */
 
@@ -154,6 +150,7 @@ int main(void)
   MX_RTC_Init();
   MX_USART1_UART_Init();
   MX_TIM2_Init();
+  MX_CAN_Init();
   /* USER CODE BEGIN 2 */
   setbuf(stdin, NULL);
   setbuf(stdout, NULL);
@@ -161,6 +158,15 @@ int main(void)
   dma_printf_init(&huart1);
   dma_scanf_init(&huart1);
   HAL_TIM_Base_Start_IT(&htim2);
+
+
+  CANopenNodeSTM32 canOpenNodeSTM32;
+  canOpenNodeSTM32.CANHandle = &hcan;
+  canOpenNodeSTM32.HWInitFunction = MX_CAN_Init;
+  canOpenNodeSTM32.timerHandle = &htim2;
+  canOpenNodeSTM32.desiredNodeID = 01;
+  canOpenNodeSTM32.baudrate = 125;
+  canopen_app_init(&canOpenNodeSTM32);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -220,6 +226,43 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief CAN Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN_Init(void)
+{
+
+  /* USER CODE BEGIN CAN_Init 0 */
+
+  /* USER CODE END CAN_Init 0 */
+
+  /* USER CODE BEGIN CAN_Init 1 */
+
+  /* USER CODE END CAN_Init 1 */
+  hcan.Instance = CAN1;
+  hcan.Init.Prescaler = 18;
+  hcan.Init.Mode = CAN_MODE_NORMAL;
+  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_13TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_2TQ;
+  hcan.Init.TimeTriggeredMode = DISABLE;
+  hcan.Init.AutoBusOff = DISABLE;
+  hcan.Init.AutoWakeUp = DISABLE;
+  hcan.Init.AutoRetransmission = DISABLE;
+  hcan.Init.ReceiveFifoLocked = DISABLE;
+  hcan.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN_Init 2 */
+
+  /* USER CODE END CAN_Init 2 */
+
 }
 
 /**
@@ -382,6 +425,39 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM3 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+  static uint32_t c;
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM3) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+  if (htim->Instance == TIM2) {
+	  if (c++ > 500)
+	  {
+		flag = 1;
+		c = 0;
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  }
+  }
+
+  // Handle CANOpen app interrupts
+    if (htim == canopenNodeSTM32->timerHandle) {
+        canopen_app_interrupt();
+    }
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
