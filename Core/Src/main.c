@@ -59,7 +59,7 @@ static void MX_RTC_Init(void);
 void loop()
 {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
-	HAL_Delay(1000);
+	HAL_Delay(100);
 }
 /* USER CODE END 0 */
 
