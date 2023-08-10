@@ -25,7 +25,7 @@
 #include "dma_scanf.h"
 #include "log.h"
 
-#include "CO_app_STM32.h"
+////#include "CO_app_STM32.h"
 
 /* USER CODE END Includes */
 
@@ -114,7 +114,7 @@ void loop()
 	}
 //	HAL_Delay(100);
 
-	canopen_app_process();
+////	canopen_app_process();
 }
 /* USER CODE END 0 */
 
@@ -159,7 +159,7 @@ int main(void)
   dma_scanf_init(&huart1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-
+#if 0
   CANopenNodeSTM32 canOpenNodeSTM32;
   canOpenNodeSTM32.CANHandle = &hcan;
   canOpenNodeSTM32.HWInitFunction = MX_CAN_Init;
@@ -167,6 +167,8 @@ int main(void)
   canOpenNodeSTM32.desiredNodeID = 01;
   canOpenNodeSTM32.baudrate = 125;
   canopen_app_init(&canOpenNodeSTM32);
+#endif
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -453,9 +455,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 
   // Handle CANOpen app interrupts
-    if (htim == canopenNodeSTM32->timerHandle) {
-        canopen_app_interrupt();
-    }
+////    if (htim == canopenNodeSTM32->timerHandle) {
+////        canopen_app_interrupt();
+////    }
   /* USER CODE END Callback 1 */
 }
 
