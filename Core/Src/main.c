@@ -26,7 +26,7 @@
 #include "log.h"
 
 #include "CO_app_STM32.h"
-
+#include "OD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +56,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 uint8_t flag;
+extern OD_PERSIST_COMM_t OD_PERSIST_COMM;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -111,6 +112,7 @@ void loop()
 		flag = 0;
 		log_info("Count = %lu\r", count++);
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+		OD_PERSIST_COMM.x6000_velocity = count;
 	}
 //	HAL_Delay(100);
 
