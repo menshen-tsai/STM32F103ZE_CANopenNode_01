@@ -16,7 +16,7 @@
 
         Created:      2020/11/23 下午 07:00:00
         Created By:   
-        Modified:     2023/8/10 下午 07:16:46
+        Modified:     2023/8/10 下午 07:21:13
         Modified By:  
 
     Device Info:
@@ -44,6 +44,7 @@
 #define OD_CNT_HB_PROD 1
 #define OD_CNT_SDO_SRV 1
 #define OD_CNT_SDO_CLI 1
+#define OD_CNT_TPDO 1
 
 
 /*******************************************************************************
@@ -83,6 +84,26 @@ typedef struct {
         uint32_t COB_IDServerToClientRx;
         uint8_t node_IDOfTheSDOServer;
     } x1280_SDOClientParameter;
+    struct {
+        uint8_t highestSub_indexSupported;
+        uint32_t COB_IDUsedByTPDO;
+        uint8_t transmissionType;
+        uint16_t inhibitTime;
+        uint16_t eventTimer;
+        uint8_t SYNCStartValue;
+    } x1800_TPDOCommunicationParameter;
+    struct {
+        uint8_t numberOfMappedApplicationObjectsInPDO;
+        uint32_t applicationObject1;
+        uint32_t applicationObject2;
+        uint32_t applicationObject3;
+        uint32_t applicationObject4;
+        uint32_t applicationObject5;
+        uint32_t applicationObject6;
+        uint32_t applicationObject7;
+        uint32_t applicationObject8;
+    } x1A00_TPDOMappingParameter;
+    uint32_t x6000_velocity;
 } OD_PERSIST_COMM_t;
 
 typedef struct {
@@ -96,7 +117,6 @@ typedef struct {
         uint32_t COB_IDClientToServerRx;
         uint32_t COB_IDServerToClientTx;
     } x1200_SDOServerParameter;
-    uint32_t x6000_velocity;
 } OD_RAM_t;
 
 #ifndef OD_ATTR_PERSIST_COMM
@@ -135,7 +155,9 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H1019 &OD->list[14]
 #define OD_ENTRY_H1200 &OD->list[15]
 #define OD_ENTRY_H1280 &OD->list[16]
-#define OD_ENTRY_H6000 &OD->list[17]
+#define OD_ENTRY_H1800 &OD->list[17]
+#define OD_ENTRY_H1A00 &OD->list[18]
+#define OD_ENTRY_H6000 &OD->list[19]
 
 
 /*******************************************************************************
@@ -158,7 +180,9 @@ extern OD_ATTR_OD OD_t *OD;
 #define OD_ENTRY_H1019_synchronousCounterOverflowValue &OD->list[14]
 #define OD_ENTRY_H1200_SDOServerParameter &OD->list[15]
 #define OD_ENTRY_H1280_SDOClientParameter &OD->list[16]
-#define OD_ENTRY_H6000_velocity &OD->list[17]
+#define OD_ENTRY_H1800_TPDOCommunicationParameter &OD->list[17]
+#define OD_ENTRY_H1A00_TPDOMappingParameter &OD->list[18]
+#define OD_ENTRY_H6000_velocity &OD->list[19]
 
 
 /*******************************************************************************
@@ -191,9 +215,9 @@ extern OD_ATTR_OD OD_t *OD;
     (config).CNT_RPDO = 0;\
     (config).ENTRY_H1400 = NULL;\
     (config).ENTRY_H1600 = NULL;\
-    (config).CNT_TPDO = 0;\
-    (config).ENTRY_H1800 = NULL;\
-    (config).ENTRY_H1A00 = NULL;\
+    (config).CNT_TPDO = OD_CNT_TPDO;\
+    (config).ENTRY_H1800 = OD_ENTRY_H1800;\
+    (config).ENTRY_H1A00 = OD_ENTRY_H1A00;\
     (config).CNT_LEDS = 0;\
     (config).CNT_GFC = 0;\
     (config).ENTRY_H1300 = NULL;\
