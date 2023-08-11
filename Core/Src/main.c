@@ -104,7 +104,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
   */
 
 
-void loop()
+void loop(CANopenNodeSTM32 canOpenNodeSTM32)
 {
 	static uint32_t count;
 	if (flag == 1)
@@ -117,6 +117,8 @@ void loop()
 //	HAL_Delay(100);
 
 	canopen_app_process();
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, !canOpenNodeSTM32.outStatusLEDGreen);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, !canOpenNodeSTM32.outStatusLEDRed);
 }
 /* USER CODE END 0 */
 
@@ -176,7 +178,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	loop();
+	loop(canOpenNodeSTM32);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
